@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ProjectFlow.Application.Features.Workspaces;
 using ProjectFlow.Application.Interfaces;
 using ProjectFlow.Domain.Entities;
@@ -17,6 +18,10 @@ public class WorkspaceService : IWorkspaceService
 
     public async Task<Workspace> CreateWorkspaceAsync(CreateWorkspaceRequest request, CancellationToken ct = default)
     {
+        var ownerExists = await _db.Users.AnyAsync(u => u.Id == request.OwnerId, ct);
+        if (!ownerExists)
+            throw new InvalidOperationException($"User '{request.OwnerId}' was not found.");
+
         var workspace = new Workspace
         {
             Id = Guid.NewGuid(),

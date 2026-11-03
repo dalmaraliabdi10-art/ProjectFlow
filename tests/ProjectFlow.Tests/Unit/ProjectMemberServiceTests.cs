@@ -52,4 +52,25 @@ public class ProjectMemberServiceTests
 
         Assert.Equal(userId, result.UserId);
     }
+
+    [Fact]
+    public async Task AddProjectMemberAsync_Throws_WhenUserIsAlreadyAMember()
+    {
+        using var db = CreateContext();
+        var workspace = new Workspace { Id = Guid.NewGuid(), Name = "W", OwnerId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow };
+        var project = new Project { Id = Guid.NewGuid(), WorkspaceId = workspace.Id, Name = "P", CreatedAt = DateTime.UtcNow };
+        var userId = Guid.NewGuid();
+        var workspaceMembership = new WorkspaceMember { Id = Guid.NewGuid(), WorkspaceId = workspace.Id, UserId = userId, Role = WorkspaceRole.Member, JoinedAt = DateTime.UtcNow };
+        var existingProjectMembership = new ProjectMember { Id = Guid.NewGuid(), ProjectId = project.Id, UserId = userId, AddedAt = DateTime.UtcNow };
+        db.Workspaces.Add(workspace);
+        db.Projects.Add(project);
+        db.WorkspaceMembers.Add(workspaceMembership);
+        db.ProjectMembers.Add(existingProjectMembership);
+        await db.SaveChangesAsync();
+
+        var service = new ProjectMemberService(db);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.AddProjectMemberAsync(new AddProjectMemberRequest(project.Id, userId)));
+    }
 }

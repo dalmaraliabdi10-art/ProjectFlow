@@ -27,6 +27,13 @@ public class ProjectMemberService : IProjectMemberService
             throw new InvalidOperationException(
                 $"User '{request.UserId}' must be a member of the project's workspace before being added to the project.");
 
+        var alreadyMember = await _db.ProjectMembers.AnyAsync(
+            m => m.ProjectId == request.ProjectId && m.UserId == request.UserId, ct);
+
+        if (alreadyMember)
+            throw new InvalidOperationException(
+                $"User '{request.UserId}' is already a member of project '{request.ProjectId}'.");
+
         var member = new ProjectMember
         {
             Id = Guid.NewGuid(),
