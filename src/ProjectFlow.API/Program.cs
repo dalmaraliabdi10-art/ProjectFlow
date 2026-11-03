@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using ProjectFlow.Application.Interfaces;
 using ProjectFlow.Infrastructure.Persistence;
+using ProjectFlow.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 const string CorsPolicy = "ProjectFlowClients";
@@ -13,6 +15,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
+builder.Services.AddScoped<IProjectMemberService, ProjectMemberService>();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? new[] { "http://localhost:5173" };
