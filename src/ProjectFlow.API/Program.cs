@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using ProjectFlow.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 const string CorsPolicy = "ProjectFlowClients";
 
@@ -7,6 +10,9 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? new[] { "http://localhost:5173" };
